@@ -6,6 +6,15 @@ mixer.init()
 mixer.music.load("nachalo.mp3") 
 mixer.music.play()
 
+button_images = {
+    "easy": transform.scale(image.load("button_easy.png"), (300, 50)),
+    "medium": transform.scale(image.load("button_easy.png"), (300, 50)),
+    "hard": transform.scale(image.load("button_easy.png"), (300, 50)),
+    "demon": transform.scale(image.load("button_easy.png"), (300, 50)),
+    "open": transform.scale(image.load("button_easy.png"), (300, 50)),
+    "without_mission": transform.scale(image.load("button_easy.png"), (300, 50))
+}
+
 music_list = {
     "easy": "easy.mp3",
     "medium": "medium.mp3",
@@ -75,6 +84,30 @@ class Player(GameSprite):
     def fire(self):
         bullet = Bullet("pyli.png", self.rect.centerx, self.rect.top, 15, 40, -25)
         bullets.add(bullet)
+
+def draw_buttons():
+    window.blit(button_images["easy"], (win_width // 2 - 150, 120))
+    window.blit(button_images["medium"], (win_width // 2 - 150, 180))
+    window.blit(button_images["hard"], (win_width // 2 - 150, 240))
+    window.blit(button_images["demon"], (win_width // 2 - 150, 300))
+    window.blit(button_images["open"], (win_width // 2 - 150, 360))
+    window.blit(button_images["without_mission"], (win_width // 2 - 150, 420))
+    display.update()
+
+def check_button_click(pos):
+    if 100 < pos[1] < 150:
+        return "easy"
+    elif 160 < pos[1] < 210:
+        return "medium"
+    elif 220 < pos[1] < 270:
+        return "hard"
+    elif 280 < pos[1] < 330:
+        return "demon"
+    elif 340 < pos[1] < 390:
+        return "open"
+    elif 400 < pos[1] < 450:
+        return "without_mission"
+    return None
 
 class Enemy(GameSprite):
     def update(self):
@@ -278,65 +311,25 @@ while game:
     for e in event.get():
         if e.type == QUIT:
             game = False
+        elif e.type == MOUSEBUTTONDOWN:
+            pos = mouse.get_pos()
+            level = check_button_click(pos)
+            if level:
+                goal = goal_list[level]
+                mixer.music.load(music_list[level])  
+                mixer.music.play()
+                two_window(level)
+                game_started = True
+                finish = False
+                window.blit(background, (0, 0))
+                display.update()
         elif e.type == KEYDOWN:
-            if e.key == K_1:
-                goal = goal_list["easy"]
-                mixer.music.load(music_list["easy"])  
-                mixer.music.play()
-                two_window("easy")
-                game_started = True
-                finish = False
-                window.blit(background, (0, 0))
-                display.update()
-            elif e.key == K_2:
-                goal = goal_list["medium"]
-                mixer.music.load(music_list["medium"])  
-                mixer.music.play()
-                two_window("medium")
-                game_started = True
-                finish = False
-                window.blit(background, (0, 0))
-                display.update()
-            elif e.key == K_3:
-                goal = goal_list["hard"]
-                mixer.music.load(music_list["hard"])  
-                mixer.music.play()
-                two_window("hard")
-                game_started = True
-                finish = False
-                window.blit(background, (0, 0))
-                display.update()
-            elif e.key == K_4:
-                goal = goal_list["demon"]
-                mixer.music.load(music_list["demon"])  
-                mixer.music.play()
-                two_window("demon")
-                game_started = True
-                finish = False
-                window.blit(background, (0, 0))
-                display.update()
-            elif e.key == K_0:
-                goal = goal_list["open"]
-                max_lost = 9999999999
-                mixer.music.load(music_list["open"])  
-                mixer.music.play()
-                two_window("open")
-                game_started = True
-                finish = False
-                window.blit(background, (0, 0))
-                display.update()
-            elif e.key == K_6:
-                goal = goal_list["without_mission"]
-                mixer.music.load(music_list["without_mission"])  
-                mixer.music.play()
-                two_window("without_mission")
-                game_started = True
-                finish = False
-                window.blit(background, (0, 0))
-                display.update()
-            elif e.key == K_SPACE:
+            if e.key == K_SPACE:
                 fire_sound.play()
                 player.fire()
+    
+    if not game_started:
+        draw_buttons()
 
     if game_started:
         if not finish:
