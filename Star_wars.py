@@ -62,6 +62,19 @@ class GameSprite(sprite.Sprite):
 
 bullets = sprite.Group()
 
+def draw_start_screen():
+    window.blit(start_bg, (0, 0))  
+    window.blit(button_play_image, (win_width // 2 - 150, win_height // 2 - 25))
+    font3 = font.Font(None, 50)
+    play_text = font3.render("Играть", True, (255, 255, 255))
+    window.blit(play_text, (win_width // 2 - 60, win_height // 2 - 15))
+    display.update()
+
+def check_start_button_click(pos):
+    if win_width // 2 - 150 < pos[0] < win_width // 2 + 150 and win_height // 2 - 25 < pos[1] < win_height // 2 + 25:
+        return True
+    return False
+
 class Bullet(GameSprite):
     def update(self):
         self.rect.y += self.speed
@@ -92,6 +105,21 @@ def draw_buttons():
     window.blit(button_images["demon"], (win_width // 2 - 150, 300))
     window.blit(button_images["open"], (win_width // 2 - 150, 360))
     window.blit(button_images["without_mission"], (win_width // 2 - 150, 420))
+    display.update
+    
+    easy_text = font2.render("Легка", 1, (255, 255, 255))
+    medium_text = font2.render("Середня", 1, (255, 255, 255))
+    hard_text = font2.render("Важка", 1, (255, 255, 255))
+    demon_text = font2.render("Демон", 1, (255, 255, 255))
+    open_text = font2.render("Відкритий", 1, (255, 255, 255))
+    without_mission_text = font2.render("Без місії", 1, (255, 255, 255))
+
+    window.blit(easy_text, (win_width // 2 - 50, 130))
+    window.blit(medium_text, (win_width // 2 - 50, 190))
+    window.blit(hard_text, (win_width // 2 - 50, 250))
+    window.blit(demon_text, (win_width // 2 - 50, 310))
+    window.blit(open_text, (win_width // 2 - 50, 370))
+    window.blit(without_mission_text, (win_width // 2 - 50, 430))
     display.update()
 
 def check_button_click(pos):
@@ -161,27 +189,16 @@ init()
 background = transform.scale(image.load("background.jpg"), (win_width, win_height))
 loading_screen = transform.scale(image.load("nachalo.png"), (win_width, win_height))
 twow_window = transform.scale(image.load("Twowindow.jpg"), (win_width, win_height))
+button_play_image = transform.scale(image.load("button_easy.png"), (300, 50))
+start_bg = transform.scale(image.load("nachalo.png"), (win_width, win_height))
 
 window = display.set_mode((win_width, win_height))
 window.blit(loading_screen, (0, 0))
 loading_text = font2.render("Обери складність місії:", 1, (255, 255, 255))
-window.blit(loading_text, (win_width // 2 - 150, win_height - 350))
-loading_text = font2.render("Легка місія - натисніть 1", 1, (255, 255, 255))
-window.blit(loading_text, (win_width // 2 - 150, win_height - 300))
-loading_text = font2.render("       Середня місія - натисніть 2", 1, (255, 255, 255))
-window.blit(loading_text, (win_width // 2 - 200, win_height - 250))
-loading_text = font2.render("Важка місія - натисніть 3", 1, (255, 255, 255))
-window.blit(loading_text, (win_width // 2 - 150, win_height - 200))
-loading_text = font2.render("Демон місія - натисніть 4", 1, (255, 255, 255))
-window.blit(loading_text, (win_width // 2 - 150, win_height - 150))
-loading_text = font2.render("Відкритий режим - натисніть 0", 1, (255, 255, 255))
-window.blit(loading_text, (win_width // 2 - 150, win_height - 100))
-loading_text = font2.render("Режим без місії - натисніть 6", 1, (255, 255, 255))
-window.blit(loading_text, (win_width // 2 - 150, win_height - 50))
-display.update()
 
 game = True
 finish = False
+on_start_screen = True
 game_started = False
 end = None
 
@@ -313,22 +330,31 @@ while game:
             game = False
         elif e.type == MOUSEBUTTONDOWN:
             pos = mouse.get_pos()
-            level = check_button_click(pos)
-            if level:
-                goal = goal_list[level]
-                mixer.music.load(music_list[level])  
-                mixer.music.play()
-                two_window(level)
-                game_started = True
-                finish = False
-                window.blit(background, (0, 0))
-                display.update()
+            
+            if on_start_screen:  # Якщо ми на стартовому екрані
+                if check_start_button_click(pos):  # Якщо натиснули кнопку "Играть"
+                    on_start_screen = False  # Переходимо на екран вибору режиму
+            else:  # Якщо ми вже на екрані вибору режиму
+                level = check_button_click(pos)
+                if level:
+                    goal = goal_list[level]
+                    mixer.music.load(music_list[level])  
+                    mixer.music.play()
+                    two_window(level)
+                    game_started = True
+                    finish = False
+                    window.blit(background, (0, 0))
+                    display.update()
         elif e.type == KEYDOWN:
             if e.key == K_SPACE:
                 fire_sound.play()
                 player.fire()
-    
-    if not game_started:
+            elif e.key == K_ESCAPE:
+                game = False
+
+    if on_start_screen:  # Відображаємо стартовий екран, якщо на ньому
+        draw_start_screen()
+    elif not game_started:  # Відображаємо екран вибору режиму, якщо не вибрано рівень
         draw_buttons()
 
     if game_started:
