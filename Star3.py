@@ -79,10 +79,12 @@ class Enemy(GameSprite):
 
 bullets = sprite.Group()
 
+# Ігрові змінні
 player = Player("raketa.png", 5, win_height - 100, 80, 100, 10)
 monsters = sprite.Group()
 meteors = sprite.Group()
 
+# Ініціалізація екрана
 init()
 window = display.set_mode((win_width, win_height))
 background = transform.scale(image.load("background.jpg"), (win_width, win_height))
@@ -122,18 +124,9 @@ def check_button_click(pos):
         return "demon"
     return None
 
-tutorial_texts = [
-    "Вітаємо! Це ваше космічне судно. Використовуйте стрілки або клавіші 'A' та 'D' для руху.",
-    "Натискайте 'Пробіл', щоб стріляти по ворогах.",
-    "Уникайте метеорів та збивайте ворожі кораблі, щоб заробляти бали.",
-    "Досягніть цілі та не пропустіть занадто багато ворогів! Успіхів!"
-]
-
 game = True
 game_started = False
 goal = 0
-tutorial_step = 0
-in_tutorial = False
 
 while game:
     for e in event.get():
@@ -143,10 +136,7 @@ while game:
             pos = mouse.get_pos()
             if not game_started:
                 level = check_button_click(pos)
-                if level == "easy":
-                    in_tutorial = True
-                    tutorial_step = 0
-                elif level:
+                if level:
                     goal = goal_dict[level]
                     mixer.music.load(music_dict[level])
                     mixer.music.play()
@@ -161,13 +151,6 @@ while game:
                     for i in range(1, 6):
                         meteor = Enemy("meteor.png", randint(80, win_width - 80), -40, 80, 50, randint(1, 5))
                         meteors.add(meteor)
-            elif in_tutorial and e.type == MOUSEBUTTONDOWN:
-                tutorial_step += 1
-                if tutorial_step >= len(tutorial_texts):
-                    in_tutorial = False
-                    game_started = True
-                    mixer.music.load(music_dict["easy"])
-                    mixer.music.play()
             elif e.type == KEYDOWN:
                 if e.key == K_SPACE:
                     fire_sound.play()
@@ -177,13 +160,6 @@ while game:
 
     if not game_started:
         draw_buttons()
-    elif in_tutorial:
-        window.blit(background, (0, 0))
-        tutorial_text = font2.render(tutorial_texts[tutorial_step], True, (255, 255, 255))
-        next_button_text = font2.render("Далі", True, (0, 255, 0))
-        window.blit(tutorial_text, (50, win_height - 100))
-        window.blit(next_button_text, (win_width - 100, win_height - 50))
-        display.update()
     else:
         window.blit(background, (0, 0))
         text = font2.render("Рахунок: " + str(score), 1, (255, 255, 255))
